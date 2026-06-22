@@ -1,45 +1,20 @@
-import {
-  afterNextRender,
-  afterRenderEffect,
-  Component,
-  DestroyRef,
-  ElementRef,
-  inject,
-  input,
-  signal,
-  viewChild,
-} from '@angular/core';
+import { afterRenderEffect, Component, ElementRef, input, viewChild } from '@angular/core';
+import { injectCanvasSize } from '../../../shared/inject-canvas-size';
 
 @Component({
   selector: 'app-draw-rectangle',
   imports: [],
   templateUrl: '../../index.html',
-  host: { class: 'webgl-lesson' }, // для :host
+  host: { class: 'canvas-container' }, // для :host
 })
 export class DrawRectangle {
   private readonly canvas = viewChild.required<ElementRef<HTMLCanvasElement>>('canvasRef');
-  private readonly destroyRef = inject(DestroyRef);
+  private readonly size = injectCanvasSize({ canvasRef: this.canvas });
 
   color = input.required<string>();
   offsetXY = input<number>(0);
 
-  // Размер буфера рисования (стандартный 300 на 150) в device-пикселях
-  private readonly size = signal({ width: 300, height: 150 });
-
   constructor() {
-    // Один раз. useEffect с пустыми зависимостями []
-    afterNextRender({
-      // earlyRead идёт ДО write — меряем размер до первой отрисовки
-      earlyRead: () => {
-        const el = this.canvas().nativeElement;
-        this.measure(el); // ставим size синхронно, до первого draw
-
-        const ro = new ResizeObserver(() => this.measure(el));
-        ro.observe(el);
-        this.destroyRef.onDestroy(() => ro.disconnect());
-      },
-    });
-
     // useEffect с зависимостями от цвета и смещения [color, offsetXY, size]
     afterRenderEffect({
       write: () => {
@@ -57,14 +32,6 @@ export class DrawRectangle {
         ctx.fillStyle = this.color(); // подписка на сигнал
         ctx.fillRect(this.offsetXY(), this.offsetXY(), 250, 250);
       },
-    });
-  }
-
-  private measure(el: HTMLCanvasElement) {
-    const dpr = window.devicePixelRatio || 1;
-    this.size.set({
-      width: Math.max(1, Math.round(el.clientWidth * dpr)),
-      height: Math.max(1, Math.round(el.clientHeight * dpr)),
     });
   }
 }
