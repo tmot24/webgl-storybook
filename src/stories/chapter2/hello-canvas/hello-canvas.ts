@@ -1,5 +1,5 @@
 import { afterRenderEffect, Component, ElementRef, viewChild } from '@angular/core';
-import { injectCanvasSize } from '../../../shared/inject-canvas-size';
+import { injectCanvasSize } from '../../../inject/inject-canvas-size';
 
 @Component({
   selector: 'app-hello-canvas',
@@ -25,7 +25,7 @@ export class HelloCanvas {
         if (canvas.width !== width) canvas.width = width;
         if (canvas.height !== height) canvas.height = height;
 
-        // Устанавливает цвет для очистки (заливки) области рисования.
+        // Устанавливает цвет в COLOR_BUFFER_BIT для очистки (заливки) области рисования.
         // То есть сперва указываем (один раз), а при очистке ссылаемся на этот цвет
         gl.clearColor(0, 0, 0, 0.5);
         // Очистить canvas. Без этой операции каждый последующий кадр будет отображать остатки предыдущего кадра,

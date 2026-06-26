@@ -1,5 +1,5 @@
 import { afterRenderEffect, Component, ElementRef, input, viewChild } from '@angular/core';
-import { injectCanvasSize } from '../../../shared/inject-canvas-size';
+import { injectCanvasSize } from '../../../inject/inject-canvas-size';
 
 @Component({
   selector: 'app-draw-rectangle',

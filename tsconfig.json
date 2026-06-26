@@ -26,5 +26,6 @@
     {
       "path": "./tsconfig.app.json"
     }
-  ]
+  ],
+  "include": ["env.d.ts"]
 }
