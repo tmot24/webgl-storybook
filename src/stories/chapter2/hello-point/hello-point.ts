@@ -1,20 +1,20 @@
-import { Component, ElementRef, viewChild } from '@angular/core';
+import { afterRenderEffect, Component, ElementRef, Signal, viewChild } from '@angular/core';
 import vertexSource from './shader/vertex.vert';
 import fragmentSource from './shader/fragment.frag';
-import { injectWebGLRender } from '../../../inject/inject-webgl-render';
+import { injectCanvasSize } from '../../../inject/inject-canvas-size';
 
 @Component({
-  selector: 'app-hello-point-1',
+  selector: 'app-hello-point',
   imports: [],
   templateUrl: '../../index.html',
 })
-export class HelloPoint1 {
+export class HelloPoint {
   private readonly canvas = viewChild.required<ElementRef<HTMLCanvasElement>>('canvasRef');
 
   constructor() {
     injectWebGLRender({
       canvasRef: this.canvas,
-      render: ({ gl }) => {
+      render: (gl) => {
         // 1. Создание объекта шейдеров
         const vertexShader = gl.createShader(gl.VERTEX_SHADER);
         const fragmentShader = gl.createShader(gl.FRAGMENT_SHADER);
@@ -89,4 +89,34 @@ export class HelloPoint1 {
       },
     });
   }
+}
+
+interface InjectWebglRender {
+  canvasRef: Signal<ElementRef<HTMLCanvasElement>>;
+  render: (gl: WebGL2RenderingContext) => void;
+}
+
+function injectWebGLRender({ canvasRef, render }: InjectWebglRender) {
+  const size = injectCanvasSize({ canvasRef });
+
+  // useEffect с зависимостями от цвета и смещения [size]
+  afterRenderEffect({
+    write: () => {
+      const canvas = canvasRef().nativeElement;
+      const gl = canvas.getContext('webgl2');
+      if (!gl) {
+        throw new Error('WebGL2 не поддерживается');
+      }
+
+      const { width, height } = size();
+      // меняем буфер только при реальном изменении размера
+      if (canvas.width !== width) canvas.width = width;
+      if (canvas.height !== height) canvas.height = height;
+
+      // viewport почти всегда должен совпадать с буфером
+      gl.viewport(0, 0, width, height);
+
+      render(gl);
+    },
+  });
 }
