@@ -7,6 +7,7 @@ import { injectCanvasSize } from '../../../inject/inject-canvas-size';
   selector: 'app-hello-point',
   imports: [],
   templateUrl: '../../index.html',
+  host: { class: 'canvas-container' }, // для :host
 })
 export class HelloPoint {
   private readonly canvas = viewChild.required<ElementRef<HTMLCanvasElement>>('canvasRef');

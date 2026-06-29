@@ -1,16 +1,16 @@
 import type { Meta, StoryObj } from '@storybook/angular';
-import { HelloCanvas } from './hello-canvas';
+import { HelloPointByClick } from './hello-point-by-click';
 
-const meta: Meta<HelloCanvas> = {
-  title: 'WebGL/Глава 2/2 HelloCanvas',
-  component: HelloCanvas,
+const meta: Meta<HelloPointByClick> = {
+  title: 'WebGL/Глава 02/04 HelloPointByClick',
+  component: HelloPointByClick,
   // argTypes: {
   //   color: { control: 'color' },
   //   offsetXY: { control: { type: 'range', min: 0, max: 100, step: 10 } },
   // },
 };
 
-type Story = StoryObj<HelloCanvas>;
+type Story = StoryObj<HelloPointByClick>;
 export const Main: Story = {
   // args: {
   //   color: '#ff0000',

@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from '@storybook/angular';
 import { DrawRectangle } from './draw-rectangle';
 
 const meta: Meta<DrawRectangle> = {
-  title: 'WebGL/Глава 2/1 DrawRectangle',
+  title: 'WebGL/Глава 02/01 DrawRectangle',
   component: DrawRectangle,
   // parameters: { layout: 'fullscreen' },
   argTypes: {
