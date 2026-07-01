@@ -52,7 +52,7 @@ export class HelloTriangle {
         return { n, vao };
       },
       render: ({ gl, setup: { n, vao } }) => {
-        gl.bindVertexArray(vao); // одна строка вместо перепривязки буфера и атрибутов
+        gl.bindVertexArray(vao); // Одна строка вместо перепривязки буфера и атрибутов
         gl.drawArrays(gl.TRIANGLES, 0, n);
       },
     });

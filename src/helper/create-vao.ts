@@ -1,12 +1,20 @@
 interface CreateVAO {
   gl: WebGL2RenderingContext;
+  // Определяет переменную-атрибут, которой будет выполнено присваивание
   location: GLuint;
+  // Данные для записи в буферный объект (типизированный массив)
   srcData: ArrayBufferView;
+  // Определяет число компонентов на вершину в буферном объекте (допустимыми являются значения от 1 до 4)
   size: GLint;
+  // Формат данных
   type?: GLenum;
+  // Либо true, либо false. Указывает на необходимость нормализации невещественных данных
   normalized?: boolean;
+  // Определяет число байтов между разными элементами данных. Значение по умолчанию 0
   stride?: GLsizei;
+  // Определяет смещение (в байтах) от начала буферного объекта, где хранятся данные для вершин
   offset?: GLintptr;
+  // Подсказка о том, как программа собирается использовать данные в буферном объекте
   usage?: GLenum;
 }
 
@@ -16,7 +24,7 @@ export function createVAO({
   location,
   srcData,
   size,
-  type = gl.FLOAT,
+  type = getGLTypeFromArrayBuffer({ data: srcData }),
   normalized = false,
   stride = 0,
   offset = 0,
@@ -90,4 +98,21 @@ export function createVAO({
   gl.bindVertexArray(null);
 
   return { vertexBuffer, vao };
+}
+
+const typeMap = new Map<Function, GLenum>([
+  [Float32Array, WebGL2RenderingContext.FLOAT],
+  [Float64Array, WebGL2RenderingContext.FLOAT],
+  [Int8Array, WebGL2RenderingContext.BYTE],
+  [Uint8Array, WebGL2RenderingContext.UNSIGNED_BYTE],
+  [Uint8ClampedArray, WebGL2RenderingContext.UNSIGNED_BYTE],
+  [Int16Array, WebGL2RenderingContext.SHORT],
+  [Uint16Array, WebGL2RenderingContext.UNSIGNED_SHORT],
+  [Int32Array, WebGL2RenderingContext.INT],
+  [Uint32Array, WebGL2RenderingContext.UNSIGNED_INT],
+  [Float16Array, WebGL2RenderingContext.HALF_FLOAT],
+]);
+
+function getGLTypeFromArrayBuffer({ data }: { data: ArrayBufferView }): GLenum {
+  return typeMap.get(data.constructor) ?? WebGL2RenderingContext.FLOAT;
 }
