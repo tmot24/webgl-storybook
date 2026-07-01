@@ -20,7 +20,6 @@ export class MultiPoint {
       canvasRef: this.canvas,
       vertex: vertexSource,
       fragment: fragmentSource,
-      // один раз: достаём адрес uniform из программы
       setup: ({ gl, destroyRef }) => {
         const vertices = new Float32Array([0.0, 0.5, -0.5, -0.5, 0.5, -0.5]);
         const n = 3; // Число вершин
