@@ -25,12 +25,10 @@ export class MultiPoint {
         const n = 3; // Число вершин
         const size = 2; // Число координат
 
-        // 1. Создать буферный объект
         /**
          * Создаёт буферный объект
          * */
-        const vertexBuffer = gl.createBuffer();
-        // 2. Указать тип буферного объекта
+        const vertexBuffer = gl.createBuffer(); // 1. Создать буферный объект
         /**
          * Активирует буферный объект и указывает его тип:
          * Параметры:
@@ -40,8 +38,7 @@ export class MultiPoint {
          *  на информацию о вершинах
          * buffer - ссылка на буферный объект, предварительно созданный вызовом gl.createBuffer()
          * */
-        gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
-        // 3. Записать данные в буферный объект
+        gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer); // 2. Указать тип буферного объекта
         /**
          * Выделяет память для буферного объекта и записывает данные srcData в буферный объект, тип которого
          * определяется параметром target
@@ -57,8 +54,7 @@ export class MultiPoint {
          *  в) gl.DYNAMIC_DRAW - Данные в буферном объекте будут определены многократно и использованы для рисования фигур
          *  так же многократно
          * */
-        gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW);
-        // 4. Сохранить ссылку на буферный объект в переменной a_Position
+        gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW); // 3. Записать данные в буферный объект
         /**
          * Присваивает буферный объект тип gl.ARRAY_BUFFER переменной-атрибуту location
          * Параметры:
@@ -80,14 +76,13 @@ export class MultiPoint {
          * offset - Определяет смещение (в байтах) от начала буферного объекта, где хранятся данные для вершин.
          * Если данные хранятся с самого начала буфера, в этом параметре следует передать значение 0.
          * */
-        gl.vertexAttribPointer(this.a_Position, size, gl.FLOAT, false, 0, 0);
-        // 5. Разрешить присваивание переменной a_Position
+        gl.vertexAttribPointer(this.a_Position, size, gl.FLOAT, false, 0, 0); // 4. Сохранить ссылку на буферный объект в переменной a_Position
         /**
          * Разрешает присваивание буферного объекта переменной-атрибуту, определяемой параметром location.
          * Параметры:
          * location - Определяет переменную-атрибут.
          * */
-        gl.enableVertexAttribArray(this.a_Position);
+        gl.enableVertexAttribArray(this.a_Position); // 5. Разрешить присваивание переменной a_Position
 
         destroyRef.onDestroy(() => {
           gl.deleteBuffer(vertexBuffer);
