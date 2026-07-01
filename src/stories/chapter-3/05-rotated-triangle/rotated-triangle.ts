@@ -11,7 +11,6 @@ import { createVAO } from '../../../helper/create-vao';
   templateUrl: '../../index.html',
 })
 export class RotatedTriangle {
-  // Ссылка на атрибут layout(location = 0) in vec4 a_Position;
   private readonly a_Position = 0;
 
   private readonly canvas = viewChild.required<ElementRef<HTMLCanvasElement>>('canvasRef');
@@ -38,7 +37,7 @@ export class RotatedTriangle {
         const { vertexBuffer, vao } = createVAO({ gl, location: this.a_Position, srcData: vertices, size });
 
         const u_CosBSinB = gl.getUniformLocation(program, 'u_CosBSinB');
-        if (!u_CosBSinB) throw new Error('uniform u_CosB не найден');
+        if (!u_CosBSinB) throw new Error('uniform u_CosBSinB не найден');
 
         destroyRef.onDestroy(() => {
           gl.deleteBuffer(vertexBuffer);
