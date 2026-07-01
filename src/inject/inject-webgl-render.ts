@@ -7,7 +7,7 @@ interface InjectWebglRender<TSetup> {
   vertex: string;
   fragment: string;
   // одноразовая настройка после создания программы (буферы, локации и т.п.)
-  setup: (params: { gl: WebGL2RenderingContext; program: WebGLProgram }) => TSetup;
+  setup: (params: { gl: WebGL2RenderingContext; program: WebGLProgram; destroyRef: DestroyRef }) => TSetup;
   // кадр: реактивный (ресайз + любой сигнал, прочитанный внутри)
   render: (params: {
     gl: WebGL2RenderingContext;
@@ -45,7 +45,7 @@ export function injectWebGLRender<TSetup = Record<string, never>>({
       // То есть сперва указываем (один раз), а при очистке ссылаемся на этот цвет
       gl.clearColor(0, 0, 0, 0.5);
 
-      setupResult = setup({ gl, program });
+      setupResult = setup({ gl, program, destroyRef });
 
       destroyRef.onDestroy(() => gl?.deleteProgram(program));
     },
