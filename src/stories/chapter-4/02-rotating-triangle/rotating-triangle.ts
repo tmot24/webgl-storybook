@@ -6,19 +6,20 @@ import { createVAO } from '../../../helper/create-vao';
 import { mat4 } from 'gl-matrix';
 
 @Component({
-  selector: 'app-triangle-gl-matrix',
+  selector: 'app-rotating-triangle',
   imports: [],
   host: { class: 'canvas-container' }, // для :host
   templateUrl: '../../index.html',
 })
-export class TriangleGlMatrix {
+export class RotatingTriangle {
   private readonly a_Position = 0;
 
   private readonly canvas = viewChild.required<ElementRef<HTMLCanvasElement>>('canvasRef');
 
+  private angle = 0; // Накопительный угол (радианы) - состояние анимации
+  protected speed = input<number>(0);
   protected offsetX = input<number>(0);
   protected offsetY = input<number>(0);
-  protected angleAxisZ = input<number>(0);
 
   constructor() {
     injectWebGLRender({
@@ -48,14 +49,16 @@ export class TriangleGlMatrix {
         });
         return { n, vao, u_Matrix };
       },
-      render: ({ gl, setup: { n, vao, u_Matrix } }) => {
-        const radian = (Math.PI * this.angleAxisZ()) / 180; // Преобразование в радианы
-        const rotation = mat4.fromZRotation(mat4.create(), radian);
+      animate: true,
+      render: ({ gl, setup: { n, vao, u_Matrix }, delta }) => {
+        // накопитель: прибавляем поворот за прошедший кадр
+        this.angle += this.speed() * (delta / 1000) * 2 * Math.PI; // speed в оборотах в секунду
+        const rotation = mat4.fromZRotation(mat4.create(), this.angle);
         // Принимает ReadonlyVec3, поэтому должны записать 0
         const translation = mat4.fromTranslation(mat4.create(), [this.offsetX(), this.offsetY(), 0]);
 
         const matrix = mat4.create(); // Единичная матрица
-        mat4.multiply(matrix, translation, rotation); // T × R — явно, слева направо
+        mat4.multiply(matrix, rotation, translation); // R × T — явно, обратный эффект (поворот вокруг центра)
 
         gl.bindVertexArray(vao); // Одна строка вместо перепривязки буфера и атрибутов
         gl.uniformMatrix4fv(u_Matrix, false, matrix);
