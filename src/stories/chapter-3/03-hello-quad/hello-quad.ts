@@ -33,10 +33,13 @@ export class HelloQuad {
         const n = quad.length; // Число вершин
         const size = 2; // Число координат
 
-        const { vertexBuffer, vao } = createVAO({ gl, location: this.a_Position, srcData: vertices, size });
+        const { buffers, vao } = createVAO({
+          gl,
+          attributes: [{ location: this.a_Position, srcData: vertices, size }],
+        });
 
         destroyRef.onDestroy(() => {
-          gl.deleteBuffer(vertexBuffer);
+          buffers.forEach((buffer) => gl.deleteBuffer(buffer));
           gl.deleteVertexArray(vao); // VAO - тоже GPU-ресурс - удаляем
         });
         return { n, vao };
