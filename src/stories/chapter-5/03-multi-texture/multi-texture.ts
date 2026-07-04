@@ -6,6 +6,7 @@ import { createVAO } from '../../../helper/create-vao';
 import sea from '../../../image/sea.jpeg';
 import circle from '../../../image/circle.png';
 import { createTexture } from '../../../helper/create-texture';
+import { mat4 } from 'gl-matrix';
 
 @Component({
   selector: 'app-multi-texture',
@@ -60,6 +61,9 @@ export class MultiTexture {
           ],
         });
 
+        const u_Matrix = gl.getUniformLocation(program, 'u_Matrix');
+        if (!u_Matrix) throw new Error('uniform u_Matrix не найден');
+
         const u_SamplerSea = gl.getUniformLocation(program, 'u_SamplerSea');
         if (!u_SamplerSea) throw new Error('uniform u_SamplerSea не найден');
 
@@ -99,10 +103,15 @@ export class MultiTexture {
           gl.deleteTexture(textureSea);
           gl.deleteTexture(textureCircle);
         });
-        return { count, vao, isReadyTextureSea, isReadyTextureCircle };
+        return { count, vao, u_Matrix, isReadyTextureSea, isReadyTextureCircle };
       },
-      render: ({ gl, setup: { count, vao, isReadyTextureSea, isReadyTextureCircle } }) => {
+      render: ({ gl, width, height, setup: { count, vao, u_Matrix, isReadyTextureSea, isReadyTextureCircle } }) => {
         if (isReadyTextureSea() && isReadyTextureCircle()) {
+          const aspect = width / height;
+          const aspectScale = mat4.fromScaling(mat4.create(), [1 / aspect, 1, 1]);
+
+          gl.uniformMatrix4fv(u_Matrix, false, aspectScale);
+
           gl.bindVertexArray(vao); // Одна строка вместо перепривязки буфера и атрибутов
           gl.drawArrays(gl.TRIANGLE_STRIP, 0, count);
         }

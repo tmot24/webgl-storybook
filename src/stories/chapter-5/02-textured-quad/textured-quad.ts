@@ -5,6 +5,7 @@ import { injectWebGLRender } from '../../../inject/inject-webgl-render';
 import { createVAO } from '../../../helper/create-vao';
 import sea from '../../../image/sea.jpeg';
 import { createTexture } from '../../../helper/create-texture';
+import { mat4 } from 'gl-matrix';
 
 @Component({
   selector: 'app-textured-quad',
@@ -65,6 +66,9 @@ export class TexturedQuad {
           ],
         });
 
+        const u_Matrix = gl.getUniformLocation(program, 'u_Matrix');
+        if (!u_Matrix) throw new Error('uniform u_Matrix не найден');
+
         const u_Sampler = gl.getUniformLocation(program, 'u_Sampler');
         if (!u_Sampler) throw new Error('uniform u_Sampler не найден');
 
@@ -82,11 +86,15 @@ export class TexturedQuad {
           gl.deleteVertexArray(vao);
           gl.deleteTexture(texture);
         });
-        return { count, vao, u_Sampler, isReadyTexture };
+        return { count, vao, u_Sampler, u_Matrix, isReadyTexture };
       },
-      render: ({ gl, setup: { count, vao, isReadyTexture } }) => {
+      render: ({ gl, width, height, setup: { count, vao, u_Matrix, isReadyTexture } }) => {
         if (isReadyTexture()) {
-          isReadyTexture();
+          const aspect = width / height;
+          const aspectScale = mat4.fromScaling(mat4.create(), [1 / aspect, 1, 1]);
+
+          gl.uniformMatrix4fv(u_Matrix, false, aspectScale);
+
           gl.bindVertexArray(vao); // Одна строка вместо перепривязки буфера и атрибутов
           gl.drawArrays(gl.TRIANGLE_STRIP, 0, count);
         }

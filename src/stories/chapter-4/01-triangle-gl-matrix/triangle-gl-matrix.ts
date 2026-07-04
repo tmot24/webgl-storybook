@@ -51,14 +51,19 @@ export class TriangleGlMatrix {
         });
         return { n, vao, u_Matrix };
       },
-      render: ({ gl, setup: { n, vao, u_Matrix } }) => {
+      render: ({ gl, width, height, setup: { n, vao, u_Matrix } }) => {
         const radian = (Math.PI * this.angleAxisZ()) / 180; // Преобразование в радианы
         const rotation = mat4.fromZRotation(mat4.create(), radian);
         // Принимает ReadonlyVec3, поэтому должны записать 0
         const translation = mat4.fromTranslation(mat4.create(), [this.offsetX(), this.offsetY(), 0]);
+        const aspect = width / height;
+        const aspectScale = mat4.fromScaling(mat4.create(), [1 / aspect, 1, 1]);
 
-        const matrix = mat4.create(); // Единичная матрица
+        const matrix = mat4.create();
         mat4.multiply(matrix, translation, rotation); // T × R — явно, слева направо
+        mat4.multiply(matrix, aspectScale, matrix); // S × (T × R)
+
+        gl.uniformMatrix4fv(u_Matrix, false, matrix);
 
         gl.bindVertexArray(vao); // Одна строка вместо перепривязки буфера и атрибутов
         gl.uniformMatrix4fv(u_Matrix, false, matrix);
