@@ -10,6 +10,8 @@ const meta: Meta<LookAtTriangles> = {
     // offsetY: { control: { type: 'range', min: -1, max: 1, step: 0.1 } },
     // speed: { control: { type: 'range', min: -1, max: 1, step: 0.1 } },
     angleAxisZ: { control: { type: 'range', min: -180, max: 180, step: 10 } },
+    near: { control: { type: 'range', min: -1, max: 1, step: 0.1 } },
+    far: { control: { type: 'range', min: 0, max: 1, step: 0.1 } },
   },
 };
 
@@ -20,7 +22,9 @@ export const Main: Story = {
     // offsetX: 0.7,
     // offsetY: 0.7,
     // speed: 0.2,
-    angleAxisZ: -50,
+    angleAxisZ: 10,
+    near: -1,
+    far: 1,
   },
 };
 export default meta;

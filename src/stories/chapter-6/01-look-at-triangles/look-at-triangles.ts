@@ -37,11 +37,13 @@ export class LookAtTriangles {
   ];
 
   protected angleAxisZ = input<number>(0);
+  protected near = input<number>(0);
+  protected far = input<number>(0);
 
   constructor() {
     const { viewMatrix } = injectOrbitCamera({
       canvasRef: this.canvas,
-      initialEye: vec3.fromValues(0.2, 0.25, 0.25),
+      initialEye: vec3.fromValues(0, 0, 0.25),
     });
 
     injectWebGLRender({
@@ -87,8 +89,15 @@ export class LookAtTriangles {
       },
       render: ({ gl, width, height, setup: { count, vao, u_Matrix } }) => {
         const aspect = width / height;
-        // Projection
-        const aspectMatrix = mat4.fromScaling(mat4.create(), [1 / aspect, 1, 1]);
+        const projectionMatrix = mat4.ortho(
+          mat4.create(),
+          -aspect, // left - левый край плоскости
+          aspect, // right - правый край плоскости
+          -1, // bottom - нижний край плоскости
+          1, // top - верхний край плоскости
+          this.near(), // near - ближняя плоскость
+          this.far(), // far - дальняя плоскость
+        );
 
         const radian = (Math.PI * this.angleAxisZ()) / 180; // Преобразование в радианы
         const modelMatrix = composeModel({
@@ -99,7 +108,7 @@ export class LookAtTriangles {
         });
 
         const uMatrix = composeMatrix({
-          projection: aspectMatrix,
+          projection: projectionMatrix,
           view: viewMatrix(),
           model: modelMatrix,
         });
