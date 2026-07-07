@@ -1,10 +1,12 @@
-import { Component, ElementRef, viewChild } from '@angular/core';
+import { Component, ElementRef, input, viewChild } from '@angular/core';
 import vertexSource from './shader/vertex.vert';
 import fragmentSource from './shader/fragment.frag';
 import { injectWebGLRender } from '../../../inject/inject-webgl-render';
 import { createVAO } from '../../../helper/create-vao';
 import { mat4, vec3 } from 'gl-matrix';
 import { injectOrbitCamera } from '../../../inject/inject-orbit-camera';
+import { composeMatrix } from '../../../helper/compose-matrix';
+import { composeModel } from '../../../helper/compose-model';
 
 @Component({
   selector: 'app-look-at-triangles',
@@ -33,6 +35,8 @@ export class LookAtTriangles {
     { coord: { x: -0.5, y: -0.5, z: 0.0 }, color: { r: 0.4, g: 0.4, b: 1.0 } }, // лево
     { coord: { x: 0.5, y: -0.5, z: 0.0 }, color: { r: 1.0, g: 0.4, b: 0.4 } }, // право
   ];
+
+  protected angleAxisZ = input<number>(0);
 
   constructor() {
     const { viewMatrix } = injectOrbitCamera({
@@ -83,10 +87,22 @@ export class LookAtTriangles {
       },
       render: ({ gl, width, height, setup: { count, vao, u_Matrix } }) => {
         const aspect = width / height;
+        // Projection
         const aspectMatrix = mat4.fromScaling(mat4.create(), [1 / aspect, 1, 1]);
 
-        // Финальная матрица
-        const uMatrix = mat4.multiply(mat4.create(), aspectMatrix, viewMatrix()); // S × T × R
+        const radian = (Math.PI * this.angleAxisZ()) / 180; // Преобразование в радианы
+        const modelMatrix = composeModel({
+          rotate: {
+            axis: vec3.fromValues(0, 0, 1),
+            radian,
+          },
+        });
+
+        const uMatrix = composeMatrix({
+          projection: aspectMatrix,
+          view: viewMatrix(),
+          model: modelMatrix,
+        });
 
         gl.uniformMatrix4fv(u_Matrix, false, uMatrix);
 
