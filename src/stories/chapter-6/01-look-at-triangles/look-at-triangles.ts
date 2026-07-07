@@ -18,10 +18,6 @@ export class LookAtTriangles {
   private readonly a_Position = 0;
   private readonly a_Color = 1;
 
-  // Камера
-  private centerPoint = vec3.fromValues(0.0, 0.0, 0.0); // Точка направления взгляда
-  private upDirection = vec3.fromValues(0.0, 1.0, 0.0); // Направление вверх
-
   // Рисуется против часовой стрелки
   private readonly points = [
     // Дальний зелёный треугольник
@@ -39,7 +35,7 @@ export class LookAtTriangles {
   ];
 
   constructor() {
-    const { eyePoint } = injectOrbitCamera({
+    const { viewMatrix } = injectOrbitCamera({
       canvasRef: this.canvas,
       initialEye: vec3.fromValues(0.2, 0.25, 0.25),
     });
@@ -89,10 +85,8 @@ export class LookAtTriangles {
         const aspect = width / height;
         const aspectMatrix = mat4.fromScaling(mat4.create(), [1 / aspect, 1, 1]);
 
-        // Матрица вида
-        const viewMatrix = mat4.lookAt(mat4.create(), eyePoint(), this.centerPoint, this.upDirection);
         // Финальная матрица
-        const uMatrix = mat4.multiply(mat4.create(), aspectMatrix, viewMatrix); // S × T × R
+        const uMatrix = mat4.multiply(mat4.create(), aspectMatrix, viewMatrix()); // S × T × R
 
         gl.uniformMatrix4fv(u_Matrix, false, uMatrix);
 
