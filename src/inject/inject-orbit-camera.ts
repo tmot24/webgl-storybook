@@ -47,9 +47,9 @@ export function injectOrbitCamera({
    * acos(y / radius): если камера высоко (y≈radius) → polar≈0 (сверху);
    * если на экваторе (y≈0) → polar≈90°.
    * */
-  const initialPolar = Math.cos(initialEye[1] / radius);
+  const initialPolar = Math.acos(initialEye[1] / radius);
   /**
-   * azimuth (поворот вокруг Y, по экватору) - atan2 берёт угол из пары (x, y)
+   * azimuth (поворот вокруг Y, по экватору) - atan2 берёт угол из пары (x, z)
    *  atan2 сам разбирается со знаками и даёт правильный угол во всех четвертях.
    * */
   const initialAzimuth = Math.atan2(initialEye[0], initialEye[2]);

@@ -1,20 +1,19 @@
-import { Component, ElementRef, input, viewChild } from '@angular/core';
+import { Component, ElementRef, viewChild } from '@angular/core';
 import vertexSource from './shader/vertex.vert';
 import fragmentSource from './shader/fragment.frag';
 import { injectWebGLRender } from '../../../inject/inject-webgl-render';
 import { createVAO } from '../../../helper/create-vao';
 import { mat4, vec3 } from 'gl-matrix';
 import { injectOrbitCamera } from '../../../inject/inject-orbit-camera';
-import { composeMatrix } from '../../../helper/compose-matrix';
 import { composeModel } from '../../../helper/compose-model';
 
 @Component({
-  selector: 'app-look-at-triangles',
+  selector: 'app-perspective-view',
   imports: [],
   host: { class: 'canvas-container' }, // для :host
   templateUrl: '../../index.html',
 })
-export class LookAtTriangles {
+export class PerspectiveView {
   private readonly canvas = viewChild.required<ElementRef<HTMLCanvasElement>>('canvasRef');
 
   private readonly a_Position = 0;
@@ -23,27 +22,23 @@ export class LookAtTriangles {
   // Рисуется против часовой стрелки
   private readonly points = [
     // Дальний зелёный треугольник
-    { coord: { x: 0.0, y: 0.5, z: -0.4 }, color: { r: 0.4, g: 1.0, b: 0.4 } }, // верх
-    { coord: { x: -0.5, y: -0.5, z: -0.4 }, color: { r: 0.4, g: 1.0, b: 0.4 } }, // лево
-    { coord: { x: 0.5, y: -0.5, z: -0.4 }, color: { r: 1.0, g: 0.4, b: 0.4 } }, // право
-    // Жёлтый треугольник в середине
-    { coord: { x: 0.5, y: 0.4, z: -0.2 }, color: { r: 1.0, g: 0.4, b: 0.4 } }, // верх
-    { coord: { x: -0.5, y: 0.4, z: -0.2 }, color: { r: 1.0, g: 1.0, b: 0.4 } }, // лево
-    { coord: { x: 0.0, y: -0.6, z: -0.2 }, color: { r: 1.0, g: 1.0, b: 0.4 } }, // право
+    { coord: { x: 0.0, y: 1.0, z: -4.0 }, color: { r: 0.4, g: 1.0, b: 0.4 } }, // верх
+    { coord: { x: -0.5, y: -1.0, z: -4.0 }, color: { r: 0.4, g: 1.0, b: 0.4 } }, // лево
+    { coord: { x: 0.5, y: -1.0, z: -4.0 }, color: { r: 1.0, g: 0.4, b: 0.4 } }, // право
+    // Жёлтый треугольник
+    { coord: { x: 0.0, y: 1.0, z: -2.0 }, color: { r: 1.0, g: 1.0, b: 0.4 } }, // верх
+    { coord: { x: -0.5, y: -1.0, z: -2.0 }, color: { r: 1.0, g: 1.0, b: 0.4 } }, // лево
+    { coord: { x: 0.5, y: -1.0, z: -2.0 }, color: { r: 1.0, g: 0.4, b: 0.4 } }, // право
     // Ближний синий треугольник
-    { coord: { x: 0.0, y: 0.5, z: 0.0 }, color: { r: 0.4, g: 0.4, b: 1.0 } }, // верх
-    { coord: { x: -0.5, y: -0.5, z: 0.0 }, color: { r: 0.4, g: 0.4, b: 1.0 } }, // лево
-    { coord: { x: 0.5, y: -0.5, z: 0.0 }, color: { r: 1.0, g: 0.4, b: 0.4 } }, // право
+    { coord: { x: 0.0, y: 1.0, z: 0.0 }, color: { r: 0.4, g: 0.4, b: 1.0 } }, // верх
+    { coord: { x: -0.5, y: -1.0, z: 0.0 }, color: { r: 0.4, g: 0.4, b: 1.0 } }, // лево
+    { coord: { x: 0.5, y: -1.0, z: 0.0 }, color: { r: 1.0, g: 0.4, b: 0.4 } }, // право
   ];
-
-  protected angleAxisZ = input<number>(0);
-  protected near = input<number>(0);
-  protected far = input<number>(0);
 
   constructor() {
     const { viewMatrix } = injectOrbitCamera({
       canvasRef: this.canvas,
-      initialEye: vec3.fromValues(0.2, 0.25, 0.25),
+      initialEye: vec3.fromValues(0, 0, 5),
     });
 
     injectWebGLRender({
@@ -89,34 +84,27 @@ export class LookAtTriangles {
       },
       render: ({ gl, width, height, setup: { count, vao, u_Matrix } }) => {
         const aspect = width / height;
-        const projectionMatrix = mat4.ortho(
-          mat4.create(),
-          -aspect, // left - левый край плоскости
-          aspect, // right - правый край плоскости
-          -1, // bottom - нижний край плоскости
-          1, // top - верхний край плоскости
-          this.near(), // near - ближняя плоскость
-          this.far(), // far - дальняя плоскость
-        );
+        const radian = (Math.PI * 30) / 180; // Преобразование в радианы
+        const projectionMatrix = mat4.perspective(mat4.create(), radian, aspect, 1, 10);
 
-        const radian = (Math.PI * this.angleAxisZ()) / 180; // Преобразование в радианы
-        const modelMatrix = composeModel({
-          rotate: {
-            axis: vec3.fromValues(0, 0, 1),
-            radian,
-          },
-        });
+        // Общая матрица для всех объектов
+        const viewProjection = mat4.multiply(mat4.create(), projectionMatrix, viewMatrix());
+        // VAO тоже один на все — привязываем один раз до цикла
+        gl.bindVertexArray(vao);
 
-        const uMatrix = composeMatrix({
-          projection: projectionMatrix,
-          view: viewMatrix(),
-          model: modelMatrix,
-        });
+        const translateX = [-0.75, 0.75];
 
-        gl.uniformMatrix4fv(u_Matrix, false, uMatrix);
+        for (const translate of translateX) {
+          const modelMatrix = composeModel({
+            translate: vec3.fromValues(translate, 0, 0),
+          });
 
-        gl.bindVertexArray(vao); // Одна строка вместо перепривязки буфера и атрибутов
-        gl.drawArrays(gl.TRIANGLES, 0, count);
+          // Только домножение на model - то, что реально меняется на каждый объект
+          const uMatrix = mat4.multiply(mat4.create(), viewProjection, modelMatrix);
+
+          gl.uniformMatrix4fv(u_Matrix, false, uMatrix);
+          gl.drawArrays(gl.TRIANGLES, 0, count);
+        }
       },
     });
   }
