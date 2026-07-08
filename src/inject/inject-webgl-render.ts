@@ -61,7 +61,7 @@ export function injectWebGLRender<TSetup = Record<string, never>>({
     gl.viewport(0, 0, width, height);
     // Очистить canvas. Без этой операции каждый последующий кадр будет отображать остатки предыдущего кадра,
     // что может привести к визуальным артефактам и ошибкам рендеринга.
-    gl.clear(gl.COLOR_BUFFER_BIT);
+    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT); // цвет + глубина одной маской
 
     render({ gl, program, width, height, setup: setupResult, time, delta });
   };
@@ -80,6 +80,9 @@ export function injectWebGLRender<TSetup = Record<string, never>>({
       // Устанавливает цвет в COLOR_BUFFER_BIT для очистки (заливки) области рисования.
       // То есть сперва указываем (один раз), а при очистке ссылаемся на этот цвет
       gl.clearColor(0, 0, 0, 0.5);
+
+      // Активирует буфер глубины
+      gl.enable(gl.DEPTH_TEST);
 
       setupResult = setup({ gl, program, destroyRef });
 
