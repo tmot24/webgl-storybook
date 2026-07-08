@@ -23,10 +23,16 @@ interface VaoAttribute {
 interface CreateVAO {
   gl: WebGL2RenderingContext;
   attributes: VaoAttribute[];
+  indices?: {
+    // Индексы вершин, Element Buffer Object (EBO)
+    srcData: ArrayBufferView;
+    // По умолчанию gl.STATIC_DRAW
+    usage?: GLenum;
+  };
 }
 
 // VAO - контейнер конфигурации атрибутов (Vertex Array Object)
-export function createVAO({ gl, attributes }: CreateVAO) {
+export function createVAO({ gl, attributes, indices }: CreateVAO) {
   /**
    * Контейнер, который запоминает конфигурацию атрибутов,
    * какой буфер к какому атрибуту, размеры, типы, что включено.
@@ -108,10 +114,22 @@ export function createVAO({ gl, attributes }: CreateVAO) {
     },
   );
 
-  // Отвязываем, чтобы случайные последующие вызовы не писались в наш vao
+  // Индексный буфер (EBO) - если передан.
+  // ВАЖНО: привязать, пока VAO активен, чтобы привязка записалась в VAO.
+  let indexBuffer: WebGLBuffer | null = null;
+  if (indices) {
+    const { srcData, usage = gl.STATIC_DRAW } = indices;
+    indexBuffer = gl.createBuffer();
+    // Тип ELEMENT_ARRAY_BUFFER - это индексы, а не вершинные данные
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
+    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, srcData, usage);
+    // Не отвязываем ELEMENT_ARRAY_BUFFER до bindVertexArray(null) - иначе VAO не запомнит EBO
+  }
+
+  // Отвязываем, чтобы случайные последующие вызовы не писались в наш VAO
   gl.bindVertexArray(null);
 
-  return { vao, buffers };
+  return { vao, buffers, indexBuffer };
 }
 
 const typeMap = new Map<Function, GLenum>([
