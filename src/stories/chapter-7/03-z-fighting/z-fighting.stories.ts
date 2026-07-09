@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from '@storybook/angular';
 import { ZFighting } from './z-fighting';
 
 const meta: Meta<ZFighting> = {
-  title: 'WebGL/Глава 06/03 ZFighting',
+  title: 'WebGL/Глава 07/03 ZFighting',
   component: ZFighting,
   argTypes: {
     //   color: { control: 'color' },

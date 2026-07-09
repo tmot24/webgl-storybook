@@ -1,9 +1,9 @@
 import type { Meta, StoryObj } from '@storybook/angular';
-import { HelloCube } from './hello-cube';
+import { PerspectiveView } from './perspective-view';
 
-const meta: Meta<HelloCube> = {
-  title: 'WebGL/Глава 06/04 HelloCube',
-  component: HelloCube,
+const meta: Meta<PerspectiveView> = {
+  title: 'WebGL/Глава 07/02 PerspectiveView',
+  component: PerspectiveView,
   argTypes: {
     //   color: { control: 'color' },
     // offsetX: { control: { type: 'range', min: -1, max: 1, step: 0.1 } },
@@ -14,7 +14,7 @@ const meta: Meta<HelloCube> = {
   },
 };
 
-type Story = StoryObj<HelloCube>;
+type Story = StoryObj<PerspectiveView>;
 export const Main: Story = {
   args: {
     // color: '#ff0000',
