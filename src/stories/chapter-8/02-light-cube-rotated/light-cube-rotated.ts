@@ -3,17 +3,17 @@ import vertexSource from './shader/vertex.vert';
 import fragmentSource from './shader/fragment.frag';
 import { injectWebGLRender } from '../../../inject/inject-webgl-render';
 import { createVAO } from '../../../helper/create-vao';
-import { mat4, vec3 } from 'gl-matrix';
+import { mat3, mat4, vec3 } from 'gl-matrix';
 import { injectOrbitCamera } from '../../../inject/inject-orbit-camera';
 import { CUBE_FACE } from '../../../data/cube-face';
 
 @Component({
-  selector: 'app-lighted-cube',
+  selector: 'app-light-cube-rotated',
   imports: [],
   host: { class: 'canvas-container' }, // для :host
   templateUrl: '../../index.html',
 })
-export class LightedCube {
+export class LightCubeRotated {
   private readonly canvas = viewChild.required<ElementRef<HTMLCanvasElement>>('canvasRef');
 
   private readonly a_Position = 0;
@@ -21,6 +21,7 @@ export class LightedCube {
   private readonly a_Color = 2;
 
   private readonly faces = CUBE_FACE;
+  private angle = 0; // Накопительный угол (радианы) - состояние анимации
 
   constructor() {
     const { viewMatrix } = injectOrbitCamera({
@@ -80,7 +81,12 @@ export class LightedCube {
 
         const u_Matrix = gl.getUniformLocation(program, 'u_Matrix');
         if (!u_Matrix) throw new Error('uniform u_Matrix не найден');
+        const u_ModelMatrix = gl.getUniformLocation(program, 'u_ModelMatrix');
+        if (!u_ModelMatrix) throw new Error('uniform u_ModelMatrix не найден');
+        const u_NormalMatrix = gl.getUniformLocation(program, 'u_NormalMatrix');
+        if (!u_NormalMatrix) throw new Error('uniform u_NormalMatrix не найден');
         const u_Ambient = gl.getUniformLocation(program, 'u_Ambient');
+
         if (!u_Ambient) throw new Error('uniform u_Ambient не найден');
         const u_LightColor = gl.getUniformLocation(program, 'u_LightColor');
         if (!u_LightColor) throw new Error('uniform u_LightColor не найден');
@@ -103,18 +109,29 @@ export class LightedCube {
           }
           gl.deleteVertexArray(vao);
         });
-        return { count, vao, u_Matrix };
+        return { count, vao, u_Matrix, u_ModelMatrix, u_NormalMatrix };
       },
-      render: ({ gl, width, height, setup: { count, vao, u_Matrix } }) => {
+      animate: true,
+      render: ({ gl, width, height, setup: { count, vao, u_Matrix, u_ModelMatrix, u_NormalMatrix }, delta }) => {
         const aspect = width / height;
         const radian = (Math.PI * 30) / 180; // Преобразование в радианы
         const projectionMatrix = mat4.perspective(mat4.create(), radian, aspect, 1, 100);
         // Общая матрица для всех объектов
         const viewProjection = mat4.multiply(mat4.create(), projectionMatrix, viewMatrix());
+
+        // накопитель: прибавляем поворот за прошедший кадр
+        this.angle += 0.075 * (delta / 1000) * 2 * Math.PI; // speed (0.1) в оборотах в секунду
+        const modelMatrix = mat4.fromRotation(mat4.create(), this.angle, vec3.fromValues(1, 0.5, 0));
+        // Делает inverse + transpose (транспонированная обратная матрица)
+        const normalMatrix = mat3.normalFromMat4(mat3.create(), modelMatrix);
+
         // VAO тоже один на все — привязываем один раз до цикла
         gl.bindVertexArray(vao);
 
         gl.uniformMatrix4fv(u_Matrix, false, viewProjection);
+        gl.uniformMatrix4fv(u_ModelMatrix, false, modelMatrix);
+        gl.uniformMatrix3fv(u_NormalMatrix, false, normalMatrix);
+
         gl.drawElements(gl.TRIANGLES, count, gl.UNSIGNED_SHORT, 0);
       },
     });

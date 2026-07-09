@@ -1,9 +1,9 @@
 import type { Meta, StoryObj } from '@storybook/angular';
-import { LightedCube } from './lighted-cube';
+import { LightCubeRotated } from './light-cube-rotated';
 
-const meta: Meta<LightedCube> = {
-  title: 'WebGL/Глава 08/01 LightedCube',
-  component: LightedCube,
+const meta: Meta<LightCubeRotated> = {
+  title: 'WebGL/Глава 08/02 LightCubeRotated',
+  component: LightCubeRotated,
   argTypes: {
     // color: { control: 'color' },
     // offsetX: { control: { type: 'range', min: -1, max: 1, step: 0.1 } },
@@ -14,7 +14,7 @@ const meta: Meta<LightedCube> = {
   },
 };
 
-type Story = StoryObj<LightedCube>;
+type Story = StoryObj<LightCubeRotated>;
 export const Main: Story = {
   args: {
     // color: '#ff0000',
