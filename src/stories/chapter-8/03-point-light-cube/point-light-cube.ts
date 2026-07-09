@@ -8,12 +8,12 @@ import { injectOrbitCamera } from '../../../inject/inject-orbit-camera';
 import { CUBE_FACE } from '../../../data/cube-face';
 
 @Component({
-  selector: 'app-light-cube-rotated',
+  selector: 'app-point-light-cube',
   imports: [],
   host: { class: 'canvas-container' }, // для :host
   templateUrl: '../../index.html',
 })
-export class LightCubeRotated {
+export class PointLightCube {
   private readonly canvas = viewChild.required<ElementRef<HTMLCanvasElement>>('canvasRef');
 
   private readonly a_Position = 0;
@@ -21,12 +21,11 @@ export class LightCubeRotated {
   private readonly a_Color = 2;
 
   private readonly faces = CUBE_FACE;
-  private angle = 0; // Накопительный угол (радианы) - состояние анимации
 
   constructor() {
     const { viewMatrix } = injectOrbitCamera({
       canvasRef: this.canvas,
-      initialEye: vec3.fromValues(3, 3, 7),
+      initialEye: vec3.fromValues(3.0, 3.0, 7.0),
     });
 
     injectWebGLRender({
@@ -36,7 +35,7 @@ export class LightCubeRotated {
       setup: ({ gl, program, destroyRef }) => {
         const vertexData = new Float32Array(
           this.faces.flatMap(({ normal, points, color }) =>
-            points.flatMap(({ x, y, z }) => [x, y, z, normal.x, normal.y, normal.z, color.r, color.g, color.b]),
+            points.flatMap(({ x, y, z }) => [x, y, z, normal.x, normal.y, normal.z, 1, 0, 0]),
           ),
         );
         const DATA_BYTE = vertexData.BYTES_PER_ELEMENT; // 4 — не хардкодим магическое число
@@ -96,11 +95,9 @@ export class LightCubeRotated {
         // Цвет от источника света
         gl.uniform3f(u_LightColor, 1.0, 1.0, 1.0);
 
-        const u_LightDirection = gl.getUniformLocation(program, 'u_LightDirection');
-        if (!u_LightDirection) throw new Error('uniform u_LightDirection не найден');
-        const lightDirection = vec3.fromValues(0.5, 3.0, 1.0);
-        vec3.normalize(lightDirection, lightDirection);
-        gl.uniform3fv(u_LightDirection, lightDirection);
+        const u_LightPosition = gl.getUniformLocation(program, 'u_LightPosition');
+        if (!u_LightPosition) throw new Error('uniform u_LightPosition не найден');
+        gl.uniform3fv(u_LightPosition, vec3.fromValues(1.2, 2.0, 1.7));
 
         destroyRef.onDestroy(() => {
           buffers.forEach((buffer) => gl.deleteBuffer(buffer));
@@ -111,18 +108,14 @@ export class LightCubeRotated {
         });
         return { count, vao, u_Matrix, u_ModelMatrix, u_NormalMatrix };
       },
-      animate: true,
-      render: ({ gl, width, height, setup: { count, vao, u_Matrix, u_ModelMatrix, u_NormalMatrix }, delta }) => {
+      render: ({ gl, width, height, setup: { count, vao, u_Matrix, u_ModelMatrix, u_NormalMatrix } }) => {
         const aspect = width / height;
         const radian = (Math.PI * 30) / 180; // Преобразование в радианы
         const projectionMatrix = mat4.perspective(mat4.create(), radian, aspect, 1, 100);
         // Общая матрица для всех объектов
         const viewProjection = mat4.multiply(mat4.create(), projectionMatrix, viewMatrix());
 
-        // накопитель: прибавляем поворот за прошедший кадр
-        this.angle += 0.075 * (delta / 1000) * 2 * Math.PI; // speed (0.1) в оборотах в секунду
-        const modelMatrix = mat4.fromRotation(mat4.create(), this.angle, vec3.fromValues(1, 0.5, 0));
-        // Делает inverse + transpose (транспонированная обратная матрица)
+        const modelMatrix = mat4.create();
         const normalMatrix = mat3.normalFromMat4(mat3.create(), modelMatrix);
 
         // VAO тоже один на все — привязываем один раз до цикла
