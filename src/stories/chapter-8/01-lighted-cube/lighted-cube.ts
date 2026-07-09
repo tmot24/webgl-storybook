@@ -80,6 +80,8 @@ export class LightedCube {
 
         const u_Matrix = gl.getUniformLocation(program, 'u_Matrix');
         if (!u_Matrix) throw new Error('uniform u_Matrix не найден');
+        const u_Ambient = gl.getUniformLocation(program, 'u_Ambient');
+        if (!u_Ambient) throw new Error('uniform u_Ambient не найден');
         const u_LightColor = gl.getUniformLocation(program, 'u_LightColor');
         if (!u_LightColor) throw new Error('uniform u_LightColor не найден');
         const u_LightDirection = gl.getUniformLocation(program, 'u_LightDirection');
@@ -89,6 +91,9 @@ export class LightedCube {
         vec3.normalize(lightDirection, lightDirection);
         gl.uniform3fv(u_LightDirection, lightDirection);
 
+        // Цвет фонового света
+        gl.uniform3f(u_Ambient, 0.2, 0.2, 0.2);
+        // Цвет от источника света
         gl.uniform3f(u_LightColor, 1.0, 1.0, 1.0);
 
         destroyRef.onDestroy(() => {
