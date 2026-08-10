@@ -2,10 +2,14 @@ import { Component, ElementRef, viewChild } from '@angular/core';
 import vertexSource from './shader/vertex.vert';
 import fragmentSource from './shader/fragment.frag';
 import { injectWebGLRender } from '../../../inject/inject-webgl-render';
-import { createVAO } from '../../../helper/create-vao';
-import { glMatrix, mat4, vec3, vec4 } from 'gl-matrix';
+import { createVAO } from '../../../helper/mesh/create-vao';
+import { mat4, vec3 } from 'gl-matrix';
 import { injectOrbitCamera } from '../../../inject/inject-orbit-camera';
 import { CUBE_FACE } from '../../../data/cube-face';
+import { computeAABB } from '../../../helper/hit-box/compute-aabb';
+import { rayIntersectsBox } from '../../../helper/hit-box/ray-intersects-box';
+import { ndcToWorld } from '../../../helper/hit-box/ndc-to-world';
+import { cssToNdc } from '../../../helper/hit-box/css-to-ndc';
 
 @Component({
   selector: 'app-pick-object',
@@ -26,6 +30,9 @@ export class PickObject {
   private readonly viewProjection = mat4.create();
   // Необходимо для изменения положения объекта
   private readonly modelMatrix = mat4.create();
+  // HitBox ограничивающие вектора
+  private boxMin = vec3.create();
+  private boxMax = vec3.create();
 
   constructor() {
     const { viewMatrix } = injectOrbitCamera({
@@ -52,6 +59,11 @@ export class PickObject {
         );
         const count = indicesData.length; // Число индексов (так как отрисовка идёт по индексам)
         const stride = 9 * DATA_BYTE; // [x, y, z, normal.x, normal.y, normal.z, r, g, b].length = 9 полный шаг вершины
+
+        const allPoints = this.faces.flatMap(({ points }) => points);
+        const { boxMin, boxMax } = computeAABB({ points: allPoints });
+        this.boxMin = boxMin;
+        this.boxMax = boxMax;
 
         const { buffers, vao, indexBuffer } = createVAO({
           gl,
@@ -134,14 +146,13 @@ export class PickObject {
   protected clickHandler(event: MouseEvent) {
     const rect = this.canvas().nativeElement.getBoundingClientRect();
     // Шаг 1: CSS-пиксели => NDC [-1, 1] (Y инвертируем) NDC = Normalized Device Coordinates
-    const ndcX = ((event.clientX - rect.left) / rect.width) * 2 - 1;
-    const ndcY = 1 - ((event.clientY - rect.top) / rect.height) * 2;
+    const { ndcX, ndcY } = cssToNdc({ event, rect });
     // Шаг 2: NDC => луч в мире через обратную viewProjection
     const inverseVP = mat4.invert(mat4.create(), this.viewProjection);
     if (!inverseVP) return;
 
-    const nearPoint = this.unProject({ ndcX, ndcY, ndcZ: -1, inverseVP });
-    const farPoint = this.unProject({ ndcX, ndcY, ndcZ: 1, inverseVP });
+    const nearPoint = ndcToWorld({ ndcX, ndcY, ndcZ: -1, inverseVP });
+    const farPoint = ndcToWorld({ ndcX, ndcY, ndcZ: 1, inverseVP });
 
     const rayOrigin = nearPoint;
     const rayDir = vec3.normalize(vec3.create(), vec3.subtract(vec3.create(), farPoint, nearPoint));
@@ -157,50 +168,13 @@ export class PickObject {
     vec3.normalize(localDir, localDir);
 
     // Шаг 3: теперь проверяем против ИСХОДНОЙ коробки [-1,1]³ — в локальном пространстве куб снова осевой
-    const hit = this.rayIntersectsBox({
+    const hit = rayIntersectsBox({
       origin: localOrigin,
       dir: localDir,
-      boxMin: vec3.fromValues(-1, -1, -1),
-      boxMax: vec3.fromValues(1, 1, 1),
+      boxMin: this.boxMin,
+      boxMax: this.boxMax,
     });
 
     if (hit) alert('Попал по кубу!');
-  }
-
-  // NDC-точку (с заданной глубиной) разматываем обратно в мир
-  private unProject({ ndcX, ndcY, ndcZ, inverseVP }: { ndcX: number; ndcY: number; ndcZ: number; inverseVP: mat4 }) {
-    const clip = vec4.fromValues(ndcX, ndcY, ndcZ, 1);
-    const world = vec4.transformMat4(vec4.create(), clip, inverseVP);
-    // Обязательно: делим xyz на w - это перспективное деление.
-    // Проекция умножала на w, разматываение должно поделить обратно, иначе точка будет неверной.
-    return vec3.fromValues(world[0] / world[3], world[1] / world[3], world[2] / world[3]);
-  }
-
-  // Пересечение луча с осевой коробкой (метод слэбов)
-  private rayIntersectsBox({ origin, dir, boxMin, boxMax }: { origin: vec3; dir: vec3; boxMin: vec3; boxMax: vec3 }) {
-    let tMin = -Infinity; // самый поздний "вход" в полосу
-    let tMax = Infinity; // самый ранний "выход" из полосы
-
-    for (let axis = 0; axis < 3; axis++) {
-      const o = origin[axis];
-      const d = dir[axis];
-
-      // glMatrix.EPSILON - порог, ниже которого считаем число нулём
-      if (Math.abs(d) < glMatrix.EPSILON) {
-        // луч параллелен плоскостям этой оси: начало вне полосы => промах
-        if (o < boxMin[axis] || o > boxMax[axis]) return false;
-      } else {
-        let t1 = (boxMin[axis] - o) / d;
-        let t2 = (boxMax[axis] - o) / d;
-        if (t1 > t2) [t1, t2] = [t2, t1]; // t1 — вход, t2 — выход
-
-        tMin = Math.max(tMin, t1);
-        tMax = Math.min(tMax, t2);
-
-        if (tMin > tMax) return false; // полосы не пересеклись → мимо
-      }
-    }
-
-    return tMax >= 0; // коробка перед камерой
   }
 }

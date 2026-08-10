@@ -1,5 +1,5 @@
 import { mat4, vec3 } from 'gl-matrix';
-import { getRadianFromDegree } from './get-radian-from-degree';
+import { getRadianFromDegree } from '../common/get-radian-from-degree';
 
 interface Segment {
   height: number;

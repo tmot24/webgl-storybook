@@ -2,10 +2,10 @@ import { Component, ElementRef, viewChild } from '@angular/core';
 import vertexSource from './shader/vertex.vert';
 import fragmentSource from './shader/fragment.frag';
 import { injectWebGLRender } from '../../../inject/inject-webgl-render';
-import { createVAO } from '../../../helper/create-vao';
+import { createVAO } from '../../../helper/mesh/create-vao';
 import { mat4, vec3 } from 'gl-matrix';
 import { injectOrbitCamera } from '../../../inject/inject-orbit-camera';
-import { composeModel } from '../../../helper/compose-model';
+import { composeModel } from '../../../helper/matrix/compose-model';
 
 @Component({
   selector: 'app-perspective-view',

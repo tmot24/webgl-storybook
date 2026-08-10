@@ -2,11 +2,11 @@ import { Component, ElementRef, input, viewChild } from '@angular/core';
 import vertexSource from './shader/vertex.vert';
 import fragmentSource from './shader/fragment.frag';
 import { injectWebGLRender } from '../../../inject/inject-webgl-render';
-import { createVAO } from '../../../helper/create-vao';
+import { createVAO } from '../../../helper/mesh/create-vao';
 import { mat4, vec3 } from 'gl-matrix';
 import { injectOrbitCamera } from '../../../inject/inject-orbit-camera';
-import { composeMatrix } from '../../../helper/compose-matrix';
-import { composeModel } from '../../../helper/compose-model';
+import { composeMatrix } from '../../../helper/matrix/compose-matrix';
+import { composeModel } from '../../../helper/matrix/compose-model';
 
 @Component({
   selector: 'app-look-at-triangles',

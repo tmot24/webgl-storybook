@@ -2,9 +2,9 @@ import { Component, ElementRef, viewChild } from '@angular/core';
 import vertexSource from './shader/vertex.vert';
 import fragmentSource from './shader/fragment.frag';
 import { injectWebGLRender } from '../../../inject/inject-webgl-render';
-import { createVAO } from '../../../helper/create-vao';
+import { createVAO } from '../../../helper/mesh/create-vao';
 import sea from '../../../image/sea.jpeg';
-import { createTexture } from '../../../helper/create-texture';
+import { createTexture } from '../../../helper/mesh/create-texture';
 import { mat4 } from 'gl-matrix';
 
 @Component({

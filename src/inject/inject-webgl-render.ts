@@ -1,7 +1,7 @@
 import { afterNextRender, afterRenderEffect, DestroyRef, ElementRef, inject, Signal } from '@angular/core';
 import { injectCanvasSize } from './inject-canvas-size';
-import { createProgram } from '../helper/create-program';
-import { runAnimationFrame } from '../helper/run-animation-frame';
+import { createProgram } from '../helper/core/create-program';
+import { runAnimationFrame } from '../helper/core/run-animation-frame';
 
 interface InjectWebglRender<TSetup> {
   canvasRef: Signal<ElementRef<HTMLCanvasElement>>;

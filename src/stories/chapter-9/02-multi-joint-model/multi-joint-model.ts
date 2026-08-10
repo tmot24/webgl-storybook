@@ -2,11 +2,11 @@ import { Component, ElementRef, input, viewChild } from '@angular/core';
 import vertexSource from './shader/vertex.vert';
 import fragmentSource from './shader/fragment.frag';
 import { injectWebGLRender } from '../../../inject/inject-webgl-render';
-import { createVAO } from '../../../helper/create-vao';
+import { createVAO } from '../../../helper/mesh/create-vao';
 import { mat3, mat4, vec3 } from 'gl-matrix';
 import { injectOrbitCamera } from '../../../inject/inject-orbit-camera';
 import { CUBE_FACE } from '../../../data/cube-face';
-import { computeJointMatrices } from '../../../helper/compute-joint-matrices';
+import { computeJointMatrices } from '../../../helper/matrix/compute-joint-matrices';
 
 @Component({
   selector: 'app-multi-joint-model',

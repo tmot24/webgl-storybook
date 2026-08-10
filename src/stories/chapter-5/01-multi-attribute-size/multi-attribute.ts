@@ -2,7 +2,7 @@ import { Component, ElementRef, viewChild } from '@angular/core';
 import vertexSource from './shader/vertex.vert';
 import fragmentSource from './shader/fragment.frag';
 import { injectWebGLRender } from '../../../inject/inject-webgl-render';
-import { createVAO } from '../../../helper/create-vao';
+import { createVAO } from '../../../helper/mesh/create-vao';
 
 @Component({
   selector: 'app-multi-attribute',
