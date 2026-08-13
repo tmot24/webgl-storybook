@@ -1,23 +1,20 @@
-import { Component, ElementRef, viewChild } from '@angular/core';
+import { Component, ElementRef, input, viewChild } from '@angular/core';
 import vertexSource from './shader/vertex.vert';
 import fragmentSource from './shader/fragment.frag';
 import { injectWebGLRender } from '../../../inject/inject-webgl-render';
 import { createVAO } from '../../../helper/mesh/create-vao';
-import { mat4, vec3 } from 'gl-matrix';
+import { mat4, vec2, vec3 } from 'gl-matrix';
 import { injectOrbitCamera } from '../../../inject/inject-orbit-camera';
 import { CUBE_FACE } from '../../../data/cube-face';
 
 @Component({
-  selector: 'app-head-up-display',
+  selector: 'app-fog',
   imports: [],
   host: { class: 'canvas-container' }, // для :host
-  template: `<ng-container
-    ><canvas #canvasRef></canvas><canvas #hubRef class="canvas__head-up-display"></canvas
-  ></ng-container>`,
+  templateUrl: '../../index.html',
 })
-export class HeadUpDisplay {
+export class Fog {
   private readonly canvas = viewChild.required<ElementRef<HTMLCanvasElement>>('canvasRef');
-  private readonly hud = viewChild.required<ElementRef<HTMLCanvasElement>>('hubRef');
 
   private readonly a_Position = 0;
   private readonly a_Normal = 1;
@@ -25,8 +22,11 @@ export class HeadUpDisplay {
 
   private readonly faces = CUBE_FACE;
 
+  protected near = input<number>(0);
+  protected far = input<number>(0);
+
   constructor() {
-    const { viewMatrix } = injectOrbitCamera({
+    const { viewMatrix, eyePoint } = injectOrbitCamera({
       canvasRef: this.canvas,
       initialEye: vec3.fromValues(3, 3, 7),
     });
@@ -99,27 +99,21 @@ export class HeadUpDisplay {
         // Цвет от источника света
         gl.uniform3f(u_LightColor, 1.0, 1.0, 1.0);
 
-        /**
-         * HUD
-         * */
-        const ctx = this.hud().nativeElement.getContext('2d');
-        if (!ctx) throw new Error('2d не поддерживается');
+        const u_ModelMatrix = gl.getUniformLocation(program, 'u_ModelMatrix');
+        if (!u_ModelMatrix) throw new Error('uniform u_ModelMatrix не найден');
+        const u_FogColor = gl.getUniformLocation(program, 'u_FogColor');
+        if (!u_FogColor) throw new Error('uniform u_FogColor не найден');
+        const u_FogDist = gl.getUniformLocation(program, 'u_FogDist');
+        if (!u_FogDist) throw new Error('uniform u_FogDist не найден');
+        const u_Eye = gl.getUniformLocation(program, 'u_Eye');
+        if (!u_Eye) throw new Error('uniform u_Eye не найден');
 
-        this.hud().nativeElement.width = 400;
-        this.hud().nativeElement.height = 400;
-        ctx.clearRect(0, 0, 400, 400);
-        // Треугольник
-        ctx.beginPath();
-        ctx.moveTo(120, 10);
-        ctx.lineTo(200, 150);
-        ctx.lineTo(40, 150);
-        ctx.closePath();
-        ctx.strokeStyle = `rgba(255, 255, 255, 1)`;
-        ctx.stroke();
-        // Текст
-        ctx.font = '18px "Times New Roman"';
-        ctx.fillStyle = `rgba(255, 255, 255, 1)`;
-        ctx.fillText('HUВ: Head Up Display', 40, 180);
+        // Цвет тумана
+        const fogColor = vec3.fromValues(0.137, 0.231, 0.423);
+        // Определить цвет очистки и включить удаление невидимых поверхностей
+        gl.clearColor(fogColor[0], fogColor[1], fogColor[2], 1.0);
+
+        gl.uniform3fv(u_FogColor, fogColor);
 
         destroyRef.onDestroy(() => {
           buffers.forEach((buffer) => gl.deleteBuffer(buffer));
@@ -128,9 +122,9 @@ export class HeadUpDisplay {
           }
           gl.deleteVertexArray(vao);
         });
-        return { count, vao, u_Matrix };
+        return { count, vao, u_Matrix, u_ModelMatrix, u_Eye, u_FogDist };
       },
-      render: ({ gl, width, height, setup: { count, vao, u_Matrix } }) => {
+      render: ({ gl, width, height, setup: { count, vao, u_Matrix, u_ModelMatrix, u_Eye, u_FogDist } }) => {
         const aspect = width / height;
         const radian = (Math.PI * 30) / 180; // Преобразование в радианы
         const projectionMatrix = mat4.perspective(mat4.create(), radian, aspect, 1, 100);
@@ -139,6 +133,11 @@ export class HeadUpDisplay {
         // VAO тоже один на все — привязываем один раз до цикла
         gl.bindVertexArray(vao);
 
+        const eye = eyePoint();
+        gl.uniform4f(u_Eye, eye[0], eye[1], eye[2], 1.0); // явный vec4, w=1
+        gl.uniform2fv(u_FogDist, vec2.fromValues(this.near(), this.far()));
+
+        gl.uniformMatrix4fv(u_ModelMatrix, false, mat4.create());
         gl.uniformMatrix4fv(u_Matrix, false, viewProjection);
         gl.drawElements(gl.TRIANGLES, count, gl.UNSIGNED_SHORT, 0);
       },
