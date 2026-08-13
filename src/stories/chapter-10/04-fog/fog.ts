@@ -99,14 +99,14 @@ export class Fog {
         // Цвет от источника света
         gl.uniform3f(u_LightColor, 1.0, 1.0, 1.0);
 
-        const u_ModelMatrix = gl.getUniformLocation(program, 'u_ModelMatrix');
-        if (!u_ModelMatrix) throw new Error('uniform u_ModelMatrix не найден');
+        // const u_ModelMatrix = gl.getUniformLocation(program, 'u_ModelMatrix');
+        // if (!u_ModelMatrix) throw new Error('uniform u_ModelMatrix не найден');
         const u_FogColor = gl.getUniformLocation(program, 'u_FogColor');
         if (!u_FogColor) throw new Error('uniform u_FogColor не найден');
         const u_FogDist = gl.getUniformLocation(program, 'u_FogDist');
         if (!u_FogDist) throw new Error('uniform u_FogDist не найден');
-        const u_Eye = gl.getUniformLocation(program, 'u_Eye');
-        if (!u_Eye) throw new Error('uniform u_Eye не найден');
+        // const u_Eye = gl.getUniformLocation(program, 'u_Eye');
+        // if (!u_Eye) throw new Error('uniform u_Eye не найден');
 
         // Цвет тумана
         const fogColor = vec3.fromValues(0.137, 0.231, 0.423);
@@ -122,9 +122,9 @@ export class Fog {
           }
           gl.deleteVertexArray(vao);
         });
-        return { count, vao, u_Matrix, u_ModelMatrix, u_Eye, u_FogDist };
+        return { count, vao, u_Matrix, u_FogDist };
       },
-      render: ({ gl, width, height, setup: { count, vao, u_Matrix, u_ModelMatrix, u_Eye, u_FogDist } }) => {
+      render: ({ gl, width, height, setup: { count, vao, u_Matrix, u_FogDist } }) => {
         const aspect = width / height;
         const radian = (Math.PI * 30) / 180; // Преобразование в радианы
         const projectionMatrix = mat4.perspective(mat4.create(), radian, aspect, 1, 100);
@@ -133,11 +133,11 @@ export class Fog {
         // VAO тоже один на все — привязываем один раз до цикла
         gl.bindVertexArray(vao);
 
-        const eye = eyePoint();
-        gl.uniform4f(u_Eye, eye[0], eye[1], eye[2], 1.0); // явный vec4, w=1
+        // const eye = eyePoint();
+        // gl.uniform4f(u_Eye, eye[0], eye[1], eye[2], 1.0); // явный vec4, w=1
         gl.uniform2fv(u_FogDist, vec2.fromValues(this.near(), this.far()));
 
-        gl.uniformMatrix4fv(u_ModelMatrix, false, mat4.create());
+        // gl.uniformMatrix4fv(u_ModelMatrix, false, mat4.create());
         gl.uniformMatrix4fv(u_Matrix, false, viewProjection);
         gl.drawElements(gl.TRIANGLES, count, gl.UNSIGNED_SHORT, 0);
       },
