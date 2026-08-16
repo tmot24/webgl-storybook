@@ -26,7 +26,7 @@ export class Fog {
   protected far = input<number>(0);
 
   constructor() {
-    const { viewMatrix, eyePoint } = injectOrbitCamera({
+    const { viewMatrix } = injectOrbitCamera({
       canvasRef: this.canvas,
       initialEye: vec3.fromValues(3, 3, 7),
     });
@@ -37,8 +37,18 @@ export class Fog {
       fragment: fragmentSource,
       setup: ({ gl, program, destroyRef }) => {
         const vertexData = new Float32Array(
-          this.faces.flatMap(({ normal, points, color }) =>
-            points.flatMap(({ x, y, z }) => [x, y, z, normal.x, normal.y, normal.z, color.r, color.g, color.b]),
+          this.faces.flatMap(({ normal, points }) =>
+            points.flatMap(({ coord: { x, y, z }, color }) => [
+              x,
+              y,
+              z,
+              normal.x,
+              normal.y,
+              normal.z,
+              color.r,
+              color.g,
+              color.b,
+            ]),
           ),
         );
         const DATA_BYTE = vertexData.BYTES_PER_ELEMENT; // 4 — не хардкодим магическое число

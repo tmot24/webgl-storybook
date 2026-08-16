@@ -1,4 +1,4 @@
-interface VaoAttribute {
+export interface VaoAttribute {
   // Определяет переменную-атрибут, которой будет выполнено присваивание
   location: GLuint;
   // Данные для записи в буферный объект (типизированный массив)

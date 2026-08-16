@@ -35,8 +35,18 @@ export class LightCubeRotated {
       fragment: fragmentSource,
       setup: ({ gl, program, destroyRef }) => {
         const vertexData = new Float32Array(
-          this.faces.flatMap(({ normal, points, color }) =>
-            points.flatMap(({ x, y, z }) => [x, y, z, normal.x, normal.y, normal.z, color.r, color.g, color.b]),
+          this.faces.flatMap(({ normal, points }) =>
+            points.flatMap(({ coord: { x, y, z }, color }) => [
+              x,
+              y,
+              z,
+              normal.x,
+              normal.y,
+              normal.z,
+              color.r,
+              color.g,
+              color.b,
+            ]),
           ),
         );
         const DATA_BYTE = vertexData.BYTES_PER_ELEMENT; // 4 — не хардкодим магическое число

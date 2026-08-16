@@ -42,8 +42,18 @@ export class PickFace {
       fragment: fragmentSource,
       setup: ({ gl, program, destroyRef }) => {
         const vertexData = new Float32Array(
-          this.faces.flatMap(({ normal, points, color }) =>
-            points.flatMap(({ x, y, z }) => [x, y, z, normal.x, normal.y, normal.z, color.r, color.g, color.b]),
+          this.faces.flatMap(({ normal, points }) =>
+            points.flatMap(({ coord: { x, y, z }, color }) => [
+              x,
+              y,
+              z,
+              normal.x,
+              normal.y,
+              normal.z,
+              color.r,
+              color.g,
+              color.b,
+            ]),
           ),
         );
         const DATA_BYTE = vertexData.BYTES_PER_ELEMENT; // 4 — не хардкодим магическое число
@@ -135,7 +145,7 @@ export class PickFace {
         });
         return { count, vao, u_Matrix, u_Highlight };
       },
-      render: ({ gl, width, height, setup: { count, vao, u_Matrix, u_Highlight } }) => {
+      render: ({ gl, width, height, setup: { vao, u_Matrix, u_Highlight } }) => {
         const aspect = width / height;
         const radian = (Math.PI * 30) / 180; // Преобразование в радианы
         const projectionMatrix = mat4.perspective(mat4.create(), radian, aspect, 1, 100);
@@ -171,7 +181,7 @@ export class PickFace {
 
     this.faces.forEach((face, faceIndex) => {
       // грань - это quad из 4 точек, режем на 2 треугольника (0, 1, 2) и (0, 2, 3)
-      const p = face.points.map(({ x, y, z }) => vec3.fromValues(x, y, z));
+      const p = face.points.map(({ coord: { x, y, z } }) => vec3.fromValues(x, y, z));
       const triangles = [
         [p[0], p[1], p[2]],
         [p[0], p[2], p[3]],

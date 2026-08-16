@@ -1,68 +1,59 @@
+// Каждая грань — 4 точки против часовой стрелки.
+// texCoord: стандартная раскладка углов грани (u,v) — texture натягивается на всю грань.
+// Порядок UV соответствует порядку точек: верх-право → верх-лево → низ-лево → низ-право
 export const CUBE_FACE = [
-  // front
   {
-    normal: { x: 0, y: 0, z: 1 },
-    color: { r: 1, g: 0, b: 0 },
+    normal: { x: 0, y: 0, z: 1 }, // передняя (+Z)
     points: [
-      { x: 1, y: 1, z: 1 }, // v0
-      { x: -1, y: 1, z: 1 }, // v1
-      { x: -1, y: -1, z: 1 }, // v2
-      { x: 1, y: -1, z: 1 }, // v3
+      { coord: { x: 1, y: 1, z: 1 }, color: { r: 1, g: 0, b: 0 }, texCoord: { u: 1, v: 1 } },
+      { coord: { x: -1, y: 1, z: 1 }, color: { r: 1, g: 0, b: 0 }, texCoord: { u: 0, v: 1 } },
+      { coord: { x: -1, y: -1, z: 1 }, color: { r: 1, g: 0, b: 0 }, texCoord: { u: 0, v: 0 } },
+      { coord: { x: 1, y: -1, z: 1 }, color: { r: 1, g: 0, b: 0 }, texCoord: { u: 1, v: 0 } },
     ],
   },
-  // right
   {
-    normal: { x: 1, y: 0, z: 0 },
-    color: { r: 0, g: 1, b: 0 },
+    normal: { x: 1, y: 0, z: 0 }, // правая (+X)
     points: [
-      { x: 1, y: 1, z: 1 }, // v0
-      { x: 1, y: -1, z: 1 }, // v3
-      { x: 1, y: -1, z: -1 }, // v4
-      { x: 1, y: 1, z: -1 }, // v5
+      { coord: { x: 1, y: 1, z: -1 }, color: { r: 0, g: 1, b: 0 }, texCoord: { u: 1, v: 1 } },
+      { coord: { x: 1, y: 1, z: 1 }, color: { r: 0, g: 1, b: 0 }, texCoord: { u: 0, v: 1 } },
+      { coord: { x: 1, y: -1, z: 1 }, color: { r: 0, g: 1, b: 0 }, texCoord: { u: 0, v: 0 } },
+      { coord: { x: 1, y: -1, z: -1 }, color: { r: 0, g: 1, b: 0 }, texCoord: { u: 1, v: 0 } },
     ],
   },
-  // up
   {
-    normal: { x: 0, y: 1, z: 0 },
-    color: { r: 0, g: 0, b: 1 },
+    normal: { x: 0, y: 1, z: 0 }, // верхняя (+Y)
     points: [
-      { x: 1, y: 1, z: 1 }, // v0
-      { x: 1, y: 1, z: -1 }, // v5
-      { x: -1, y: 1, z: -1 }, // v6
-      { x: -1, y: 1, z: 1 }, // v1
+      { coord: { x: 1, y: 1, z: -1 }, color: { r: 0, g: 0, b: 1 }, texCoord: { u: 1, v: 1 } },
+      { coord: { x: -1, y: 1, z: -1 }, color: { r: 0, g: 0, b: 1 }, texCoord: { u: 0, v: 1 } },
+      { coord: { x: -1, y: 1, z: 1 }, color: { r: 0, g: 0, b: 1 }, texCoord: { u: 0, v: 0 } },
+      { coord: { x: 1, y: 1, z: 1 }, color: { r: 0, g: 0, b: 1 }, texCoord: { u: 1, v: 0 } },
     ],
   },
-  // left
   {
-    normal: { x: -1, y: 0, z: 0 },
-    color: { r: 1, g: 1, b: 0 },
+    normal: { x: -1, y: 0, z: 0 }, // левая (-X)
     points: [
-      { x: -1, y: 1, z: 1 }, // v1
-      { x: -1, y: 1, z: -1 }, // v6
-      { x: -1, y: -1, z: -1 }, // v7
-      { x: -1, y: -1, z: 1 }, // v2
+      { coord: { x: -1, y: 1, z: 1 }, color: { r: 1, g: 1, b: 0 }, texCoord: { u: 1, v: 1 } },
+      { coord: { x: -1, y: 1, z: -1 }, color: { r: 1, g: 1, b: 0 }, texCoord: { u: 0, v: 1 } },
+      { coord: { x: -1, y: -1, z: -1 }, color: { r: 1, g: 1, b: 0 }, texCoord: { u: 0, v: 0 } },
+      { coord: { x: -1, y: -1, z: 1 }, color: { r: 1, g: 1, b: 0 }, texCoord: { u: 1, v: 0 } },
     ],
   },
-  // down
   {
-    normal: { x: 0, y: -1, z: 0 },
-    color: { r: 1, g: 0, b: 1 },
+    normal: { x: 0, y: -1, z: 0 }, // нижняя (-Y)
     points: [
-      { x: -1, y: -1, z: -1 }, // v7
-      { x: 1, y: -1, z: -1 }, // v4
-      { x: 1, y: -1, z: 1 }, // v3
-      { x: -1, y: -1, z: 1 }, // v2
+      { coord: { x: -1, y: -1, z: -1 }, color: { r: 0, g: 1, b: 1 }, texCoord: { u: 1, v: 1 } },
+      { coord: { x: 1, y: -1, z: -1 }, color: { r: 0, g: 1, b: 1 }, texCoord: { u: 0, v: 1 } },
+      { coord: { x: 1, y: -1, z: 1 }, color: { r: 0, g: 1, b: 1 }, texCoord: { u: 0, v: 0 } },
+      { coord: { x: -1, y: -1, z: 1 }, color: { r: 0, g: 1, b: 1 }, texCoord: { u: 1, v: 0 } },
     ],
   },
-  // back
   {
-    normal: { x: 0, y: 0, z: -1 },
-    color: { r: 0, g: 1, b: 1 },
+    normal: { x: 0, y: 0, z: -1 }, // задняя (-Z)
     points: [
-      { x: 1, y: -1, z: -1 }, // v4
-      { x: -1, y: -1, z: -1 }, // v7
-      { x: -1, y: 1, z: -1 }, // v6
-      { x: 1, y: 1, z: -1 }, // v5
+      { coord: { x: -1, y: 1, z: -1 }, color: { r: 1, g: 0, b: 1 }, texCoord: { u: 1, v: 1 } },
+      { coord: { x: 1, y: 1, z: -1 }, color: { r: 1, g: 0, b: 1 }, texCoord: { u: 0, v: 1 } },
+      { coord: { x: 1, y: -1, z: -1 }, color: { r: 1, g: 0, b: 1 }, texCoord: { u: 0, v: 0 } },
+      { coord: { x: -1, y: -1, z: -1 }, color: { r: 1, g: 0, b: 1 }, texCoord: { u: 1, v: 0 } },
     ],
   },
 ];

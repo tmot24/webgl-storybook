@@ -34,8 +34,8 @@ export class PointLightCubeFragment {
       fragment: fragmentSource,
       setup: ({ gl, program, destroyRef }) => {
         const vertexData = new Float32Array(
-          this.faces.flatMap(({ normal, points, color }) =>
-            points.flatMap(({ x, y, z }) => [x, y, z, normal.x, normal.y, normal.z, 1, 0, 0]),
+          this.faces.flatMap(({ normal, points }) =>
+            points.flatMap(({ coord: { x, y, z } }) => [x, y, z, normal.x, normal.y, normal.z, 1, 0, 0]),
           ),
         );
         const DATA_BYTE = vertexData.BYTES_PER_ELEMENT; // 4 — не хардкодим магическое число
