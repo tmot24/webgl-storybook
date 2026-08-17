@@ -1,4 +1,4 @@
-import { CubeGeometry } from '../geometry/cube-geometry';
+import { ConstructCubeGeometry } from '../geometry/construct-cube-geometry';
 import { Material } from './material';
 import { createVAO, VaoAttribute } from '../mesh/create-vao';
 
@@ -9,7 +9,7 @@ export function createDrawable({
   material,
 }: {
   gl: WebGL2RenderingContext;
-  geometry: CubeGeometry;
+  geometry: ConstructCubeGeometry;
   material: Material;
 }) {
   // материал говорит "мне нужны position и color" => берём эти массивы из геометрии

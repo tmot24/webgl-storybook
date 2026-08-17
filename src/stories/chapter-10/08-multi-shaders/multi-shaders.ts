@@ -5,7 +5,7 @@ import textureVertexSource from './shader/texture-vertex.vert';
 import textureFragmentSource from './shader/texture-fragment.frag';
 import { mat4, vec3 } from 'gl-matrix';
 import { injectOrbitCamera } from '../../../inject/inject-orbit-camera';
-import { cubeGeometry } from '../../../helper/geometry/cube-geometry';
+import { constructCubeGeometry } from '../../../helper/geometry/construct-cube-geometry';
 import { Material } from '../../../helper/material/material';
 import { createTexture } from '../../../helper/mesh/create-texture';
 import sea from '../../../image/sea.jpeg';
@@ -28,7 +28,7 @@ export class MultiShaders {
 
   constructor() {
     const { viewMatrix } = injectOrbitCamera({ canvasRef: this.canvas, initialEye: vec3.fromValues(3, 3, 10) });
-    const geometry = cubeGeometry();
+    const geometry = constructCubeGeometry();
 
     const colorMaterial: Material = {
       vertex: colorVertexSource,

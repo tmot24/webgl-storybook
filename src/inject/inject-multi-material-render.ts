@@ -1,7 +1,7 @@
-import { Material } from '../helper/material/material';
+import { Material, MaterialUpdatePerFrame } from '../helper/material/material';
 import { mat4 } from 'gl-matrix';
 import { afterNextRender, afterRenderEffect, DestroyRef, ElementRef, inject, Signal } from '@angular/core';
-import { CubeGeometry } from '../helper/geometry/cube-geometry';
+import { ConstructCubeGeometry } from '../helper/geometry/construct-cube-geometry';
 import { injectCanvasSize } from './inject-canvas-size';
 import { createProgram } from '../helper/core/create-program';
 import { createDrawable } from '../helper/material/create-drawable';
@@ -9,12 +9,12 @@ import { createDrawable } from '../helper/material/create-drawable';
 // Один объект сцены: материал + функция, дающая его матрицу на текущий кадр
 interface SceneObject {
   material: Material;
-  modelMatrix: () => mat4; // может читать сигналы (угол, позиция) => реактивно
+  modelMatrix?: () => mat4; // может читать сигналы (угол, позиция) => реактивно
 }
 
 interface InjectMultiMaterialRender {
   canvasRef: Signal<ElementRef<HTMLCanvasElement>>;
-  geometry: CubeGeometry;
+  geometry: ConstructCubeGeometry;
   objects: SceneObject[];
   // общая матрица камеры+проекция на кадр (view-projection)
   viewProjection: () => mat4;
@@ -26,8 +26,9 @@ interface PreparedObject {
   vao: WebGLVertexArrayObject;
   count: number;
   u_Matrix: WebGLUniformLocation;
-  modelMatrix: () => mat4;
+  modelMatrix?: () => mat4;
   isReady?: Signal<boolean>;
+  updatePerFrame?: MaterialUpdatePerFrame;
 }
 
 export function injectMultiMaterialRender({ canvasRef, geometry, objects, viewProjection }: InjectMultiMaterialRender) {
@@ -78,7 +79,14 @@ export function injectMultiMaterialRender({ canvasRef, geometry, objects, viewPr
           context.deleteProgram(program);
         });
 
-        return { program, vao, count, u_Matrix, modelMatrix, isReady: result?.isReady };
+        return {
+          program,
+          vao,
+          count,
+          u_Matrix,
+          modelMatrix,
+          isReady: result?.isReady,
+        };
       });
     },
   });
@@ -104,12 +112,17 @@ export function injectMultiMaterialRender({ canvasRef, geometry, objects, viewPr
 
       const viewProjectionMatrix = viewProjection(); // общая на кадр
 
-      for (const { program, vao, count, u_Matrix, modelMatrix } of prepared) {
-        gl.useProgram(program); // переключаем программу под объект
+      for (const { program, vao, count, u_Matrix, modelMatrix, updatePerFrame } of prepared) {
+        gl.useProgram(program); // активируем программу ПЕРЕД любым uniform
         gl.bindVertexArray(vao); // его VAO
+
+        const model = modelMatrix?.() ?? mat4.create();
         // итоговая матрица = viewProjection * model этого объекта
-        const uMatrix = mat4.multiply(mat4.create(), viewProjectionMatrix, modelMatrix());
-        gl.uniformMatrix4fv(u_Matrix, false, uMatrix);
+        const uMatrix = mat4.multiply(mat4.create(), viewProjectionMatrix, model);
+        gl.uniformMatrix4fv(u_Matrix, false, uMatrix); // общий MVP - есть у всех
+
+        updatePerFrame?.({ modelMatrix: model, viewProjection: viewProjectionMatrix });
+
         // type - определяет тип индексов: gl.UNSIGNED_BYTE (для Uint8Array) или gl.UNSIGNED_SHORT (для Uint16Array);
         gl.drawElements(gl.TRIANGLES, count, gl.UNSIGNED_SHORT, 0);
       }
