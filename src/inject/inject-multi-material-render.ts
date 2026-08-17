@@ -69,7 +69,7 @@ export function injectMultiMaterialRender({ canvasRef, geometry, objects, viewPr
 
         // uniform/текстуры конкретного материала (нужно активировать программу перед uniform1i)
         context.useProgram(program);
-        const result = material.setupUniforms?.({ gl: context, program, destroyRef });
+        const result = material.setup?.({ gl: context, program, destroyRef });
 
         // очистка ресурсов этого объекта
         destroyRef.onDestroy(() => {

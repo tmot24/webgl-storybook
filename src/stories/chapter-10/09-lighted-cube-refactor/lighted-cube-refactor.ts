@@ -1,11 +1,12 @@
 import { Component, ElementRef, viewChild } from '@angular/core';
 import vertexSource from './shader/vertex.vert';
 import fragmentSource from './shader/fragment.frag';
-import { mat4, vec3 } from 'gl-matrix';
+import { vec3 } from 'gl-matrix';
 import { injectOrbitCamera } from '../../../inject/inject-orbit-camera';
 import { constructCubeGeometry } from '../../../helper/geometry/construct-cube-geometry';
 import { Material } from '../../../helper/material/material';
 import { injectMultiMaterialRender } from '../../../inject/inject-multi-material-render';
+import { createViewProjectionMatrix } from '../../../helper/matrix/create-view-projection-matrix';
 
 @Component({
   selector: 'app-lighted-cube-refactor',
@@ -26,12 +27,7 @@ export class LightedCubeRefactor {
       initialEye: vec3.fromValues(3, 3, 7),
     });
 
-    const viewProjection = () => {
-      const canvas = this.canvas().nativeElement;
-      const aspect = canvas.width / canvas.height;
-      const projection = mat4.perspective(mat4.create(), (Math.PI * 30) / 180, aspect, 1, 100);
-      return mat4.multiply(mat4.create(), projection, viewMatrix());
-    };
+    const viewProjection = createViewProjectionMatrix({ canvasRef: this.canvas, viewMatrix });
 
     const cubeGeometry = constructCubeGeometry();
     const material: Material = {
@@ -54,7 +50,7 @@ export class LightedCubeRefactor {
           size: 2,
         },
       ],
-      setupUniforms: ({ gl, program }) => {
+      setup: ({ gl, program }) => {
         const u_Ambient = gl.getUniformLocation(program, 'u_Ambient');
         if (!u_Ambient) throw new Error('uniform u_Ambient не найден');
         const u_LightColor = gl.getUniformLocation(program, 'u_LightColor');

@@ -14,7 +14,7 @@ export interface Material {
   fragment: string;
   attributes: AttributeSpec[]; // что материал читает из геометрии
   // одноразовая настройка (кэш локаций, статичные uniform, текстуры)
-  setupUniforms?: (params: { gl: WebGL2RenderingContext; program: WebGLProgram; destroyRef: DestroyRef }) => {
+  setup?: (params: { gl: WebGL2RenderingContext; program: WebGLProgram; destroyRef: DestroyRef }) => {
     isReady?: Signal<boolean>;
     // покадровое обновление per-object uniform (нормальная матрица, модель и т.д.)
     updatePerFrame?: (params: MaterialUpdatePerFrame) => void;

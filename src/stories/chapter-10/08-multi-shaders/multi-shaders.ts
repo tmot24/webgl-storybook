@@ -46,7 +46,7 @@ export class MultiShaders {
         { geometryKey: 'position', location: this.a_Position, size: 3 },
         { geometryKey: 'texCoord', location: this.a_TexCoord, size: 2 },
       ],
-      setupUniforms: ({ gl, program, destroyRef }) => {
+      setup: ({ gl, program, destroyRef }) => {
         const { texture, slot, isReadyTexture } = createTexture({ gl, src: sea, slot: this.textureSlot });
         const u_Sampler = gl.getUniformLocation(program, 'u_Sampler');
         if (!u_Sampler) throw new Error('uniform u_Sampler не найден');
