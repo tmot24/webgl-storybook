@@ -37,7 +37,7 @@ export function injectWebGLRender<TSetup = Record<string, never>>({
   let program: WebGLProgram | null;
   let setupResult: TSetup;
 
-  // общий "нарисовать кадр"Ж синхронизация буфера + viewport + clear + render
+  // общий "нарисовать кадр", синхронизация буфера + viewport + clear + render
   const draw = ({
     gl,
     program,
