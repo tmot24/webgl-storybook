@@ -139,7 +139,7 @@ export class Framebuffer {
         gl.clearColor(0.5, 0.5, 0.5, 1.0);
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-        gl.bindTexture(gl.TEXTURE_2D, fb.texture); // на квадрат - отдельный куб
+        gl.bindTexture(gl.TEXTURE_2D, fb.colorTexture); // на квадрат - отдельный куб
         gl.bindVertexArray(quadVAO.vao);
         const aspect = canvas.width / canvas.height;
         const outerProjection = mat4.perspective(mat4.create(), (Math.PI * 30) / 180, aspect, 0.1, 100);
